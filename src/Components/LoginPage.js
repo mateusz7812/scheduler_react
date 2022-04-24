@@ -39,7 +39,6 @@ const LoginPage = () => {
 
     return(
         <div>
-            logging in... {data?.login?.id}
             <LoginForm login={login} setLogin={setLogin} password={password} setPassword={setPassword} getLogin={getLogin}/>
         </div>
     )

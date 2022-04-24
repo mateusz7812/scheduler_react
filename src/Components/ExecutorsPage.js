@@ -39,7 +39,7 @@ const ExecutorsPage = () => {
         onCompleted: data => setExecutors(data?.executorsForAccount)
     });
 
-    const { data: subscriptionData } = useSubscription(
+    useSubscription(
         EXECUTORS_STATUS_CHANGE_SUBSCRIPTION,
         { 
             variables: { 

@@ -1,6 +1,7 @@
 import { Container } from "react-bootstrap";
 import { gql, useQuery } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
+import Task from "./Task";
 
 const TASKS_QUERY = gql`
     query GetTasks{
@@ -23,7 +24,7 @@ const TasksPage =() =>{
     return(
         <Container>
             <h1>Tasks</h1>
-            {tasks.map(t => <p>{t.id} {t.name} {t.inputType} {t.outputType}</p>)}
+            {tasks.map(task => <Task key={task.id} task={task}/>)}
         </Container>
     )
 }

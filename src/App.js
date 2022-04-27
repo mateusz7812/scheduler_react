@@ -1,6 +1,12 @@
+import { Container } from "react-bootstrap";
 import { Outlet, Navigate } from "react-router-dom";
+import styled from "styled-components";
 import AppNavbar from "./Components/AppNavbar";
 import { useTracked } from "./Container";
+
+const AppWrapper = styled.div`
+  padding-top: 5vh;
+`;
 
 function App() {
   const [state, setState] = useTracked();
@@ -10,7 +16,9 @@ function App() {
   return (
     <div>
       <AppNavbar accountName={state.accountName}/>
-      <Outlet/>
+      <AppWrapper>
+        <Outlet/>
+      </AppWrapper>
     </div>
   );
 }

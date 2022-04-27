@@ -9,7 +9,8 @@ const FLOWS_QUERY = gql`
         flowsForAccount(accountId: $accountId){
             id,
             name,
-            description
+            description,
+            flowTaskId
         }
     }
 `
@@ -28,7 +29,7 @@ const FlowsPage =() =>{
     return(
         <Container>
             <h1>Flows</h1>
-            {flows.map(t => <Link to={t.id.toString()}>{t.id} {t.name} {t.description}</Link>)}
+            {flows.map(t => <Link key={t.id} to={t.id.toString()} state={{flow: t}}>{t.id} {t.name} {t.description}</Link>)}
         </Container>
     )
 }

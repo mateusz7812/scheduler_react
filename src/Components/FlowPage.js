@@ -1,8 +1,14 @@
-import { Button, Container, Form } from "react-bootstrap"
+import { Button, Container, Form, Stack, Row, Col } from "react-bootstrap"
 import { useParams } from "react-router-dom";
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { useState } from 'react';
 import { useTracked } from "../Container";
+import FlowTask from "./FlowTask";
+import FlowTaskDiag from "./FlowTaskDiag";
+import { useLocation } from "react-router-dom";
+import styled from "styled-components";
+import Task from "./Task";
+import DraggableTask from "./DraggableTask";
 
 const EXECUTORS_FOR_ACCOUNT_QUERY = gql`
     query GetExecutorsForAccount($accountId: Int!){
@@ -21,6 +27,7 @@ const FLOWTASKS_FOR_FLOW_QUERY = gql`
         flowTasksForFlow(flowId: $flowId){
             id,
             successorsIds,
+            environmentVariables,
             task{
                 inputType,
                 outputType,
@@ -39,11 +46,40 @@ const START_FLOW_ON_EXECUTOR_MUTATION = gql`
     }
 `
 
+const TASKS_QUERY = gql`
+    query GetTasks{
+        tasks{
+            id,
+            inputType,
+            outputType,
+            name
+        }
+    }
+`
+
+const ExecSelect = styled(Form.Select)`
+    width: 200px;
+`;
+
+const FlowDiagramWrapper = styled(Row)`
+    overFlow: scroll;
+    scrollbar-width: thin;
+    height: 50vh;
+`;
+
+const PageContainer = styled(Container)`
+    margin: 0;
+    width: 100%;
+    max-width: unset;
+`;
+
 const FlowPage = () => {
     const [executors, setExecutors] = useState([]);
     const [flowTasks, setFlowTasks] = useState([])
     const params = useParams();
     const [state, setState] = useTracked();
+    const { state: locationState } = useLocation();
+    const flow = locationState.flow;
 
     useQuery(EXECUTORS_FOR_ACCOUNT_QUERY, {
         variables: {
@@ -70,17 +106,67 @@ const FlowPage = () => {
     const chandleSetExecutorId = (e) =>
         setExecutorId(parseInt(e.target.value));
 
+    const addTaskToFlow = (taskId, flowTaskId) => {
+        console.log(taskId + " " + flowTaskId);
+        let newFlowTaskId = 90;
+        setFlowTasks([...flowTasks, 
+            {
+                id: newFlowTaskId,
+                successorsIds: [],
+                environmentVariables: [],
+                task: tasks.find(task => task.id == taskId)
+            }
+        ])
+        let flowTaskIndex = flowTasks.findIndex(flowTask => flowTask.id == flowTaskId);
+        let flowTasksCopy = [...flowTasks];
+        let flowTask = {...flowTasksCopy[flowTaskIndex]};
+        flowTask.successorsIds = [...flowTask.successorsIds, newFlowTaskId];
+        flowTasksCopy[flowTaskIndex] = flowTask;
+        setFlowTasks(flowTasksCopy);
+    }
+
+    const getFlowTaskDiagById = (flowTaskId) => 
+        flowTasks
+            .filter(flowTask => flowTask.id == flowTaskId)
+            .map(flowTask => <FlowTaskDiag key={flowTaskId} getFlowTaskDiagById={getFlowTaskDiagById} flowTask={flowTask} addTaskToFlow={addTaskToFlow}/>)
+
+    const editFlow = () => {
+        console.log("start editing");
+    }
+
+    const [tasks, setTasks] = useState([]);
+
+    useQuery(TASKS_QUERY, {
+        onCompleted: data => setTasks(data?.tasks)
+    });
+
     return(
-        <Container>
-            Flow test
-            {flowTasks.map(f => <p key={f.id}>{f.task.name}</p>)}
-            <p>executor id: {executorId}</p>
-            <Form.Select onChange={chandleSetExecutorId} aria-label="Default select example">
-                <option>Open this select menu</option>
-                {executors.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-            </Form.Select>
-            <Button onClick={startFlow} >Start flow</Button>
-        </Container>
+        <PageContainer>
+            <Row>
+                <Col>
+                    <h1 draggable="true">Flow {flow.name}</h1>
+                </Col>
+                <Col>
+                    <Stack style={{float: "right"}} direction="horizontal" gap={3}>
+                        <ExecSelect onChange={chandleSetExecutorId} aria-label="Default select example">
+                            <option>Select executor</option>
+                            {executors.map(e => <option key={e.id} value={e.id}>{e.name} - {e.status.statusCode}</option>)}
+                        </ExecSelect>
+                        <Button onClick={startFlow}>Start</Button>
+                        <Button onClick={editFlow}>Edit</Button>
+                    </Stack>
+                </Col>
+            </Row>
+            <FlowDiagramWrapper>
+                {getFlowTaskDiagById(flow.flowTaskId)}
+            </FlowDiagramWrapper>
+            <Row style={{height: "30vh"}}>
+                <Container>
+                    <h1>Tasks</h1>
+                    {tasks.map(task => <DraggableTask key={task.id} task={task}/>)}
+                </Container>
+            </Row>
+        </PageContainer>
     )
 }
 

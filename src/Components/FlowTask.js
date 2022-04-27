@@ -17,9 +17,9 @@ const EnvVariables = styled(Container)`
 const FlowTask = ({flowTask}) =>{
     return(
         <Wrapper>
-            <Task style={{margin: "0px"}} task={flowTask.task}/>
+            <Task style={{margin: "0px"}} task={flowTask?.task}/>
             <EnvVariables>
-                {flowTask.environmentVariables.map(e => 
+                {flowTask?.environmentVariables.map(e => 
                     <Row key={e.key}>
                         <Col>{e.key}:</Col>
                         <Col style={{textAlign: "right"}}>{e.value}</Col>

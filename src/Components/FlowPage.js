@@ -70,6 +70,7 @@ const FlowDiagramWrapper = styled(Row)`
 const PageContainer = styled(Container)`
     margin: 0;
     width: 100%;
+    height: 80vh;
     max-width: unset;
 `;
 
@@ -79,6 +80,7 @@ const FlowPage = () => {
     const params = useParams();
     const [state, setState] = useTracked();
     const { state: locationState } = useLocation();
+    const [editing, setEditing] = useState(false);
     const flow = locationState.flow;
 
     useQuery(EXECUTORS_FOR_ACCOUNT_QUERY, {
@@ -107,28 +109,24 @@ const FlowPage = () => {
         setExecutorId(parseInt(e.target.value));
 
     const addTaskToFlow = (taskId, flowTaskId) => {
-        console.log(taskId + " " + flowTaskId);
-        let newFlowTaskId = 90;
-        setFlowTasks([...flowTasks, 
+        console.log(flowTasks.map(f => parseInt(f.id)));
+        let newFlowTaskId = Math.max(...flowTasks.map(f => parseInt(f.id))) + 1;
+        console.log(taskId + " " + flowTaskId + " " + newFlowTaskId);
+
+        let flowTaskIndex = flowTasks.findIndex(flowTask => flowTask.id == flowTaskId);
+        let flowTasksCopy = [...flowTasks,
             {
                 id: newFlowTaskId,
                 successorsIds: [],
-                environmentVariables: [],
+                environmentVariables: [{key: "test"}],
                 task: tasks.find(task => task.id == taskId)
             }
-        ])
-        let flowTaskIndex = flowTasks.findIndex(flowTask => flowTask.id == flowTaskId);
-        let flowTasksCopy = [...flowTasks];
+        ];
         let flowTask = {...flowTasksCopy[flowTaskIndex]};
         flowTask.successorsIds = [...flowTask.successorsIds, newFlowTaskId];
         flowTasksCopy[flowTaskIndex] = flowTask;
         setFlowTasks(flowTasksCopy);
     }
-
-    const getFlowTaskDiagById = (flowTaskId) => 
-        flowTasks
-            .filter(flowTask => flowTask.id == flowTaskId)
-            .map(flowTask => <FlowTaskDiag key={flowTaskId} getFlowTaskDiagById={getFlowTaskDiagById} flowTask={flowTask} addTaskToFlow={addTaskToFlow}/>)
 
     const editFlow = () => {
         console.log("start editing");
@@ -158,14 +156,14 @@ const FlowPage = () => {
                 </Col>
             </Row>
             <FlowDiagramWrapper>
-                {getFlowTaskDiagById(flow.flowTaskId)}
+                <FlowTaskDiag flowTaskId={flow.flowTaskId} flowTasks={flowTasks} addTaskToFlow={addTaskToFlow}/>
             </FlowDiagramWrapper>
-            <Row style={{height: "30vh"}}>
+            {editing && <Row style={{height: "30vh"}}>
                 <Container>
                     <h1>Tasks</h1>
                     {tasks.map(task => <DraggableTask key={task.id} task={task}/>)}
                 </Container>
-            </Row>
+            </Row>}
         </PageContainer>
     )
 }

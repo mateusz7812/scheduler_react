@@ -23,15 +23,15 @@ const Task = ({task, style}) => {
         <TaskWrapper style={style}>
             <Row>
                 <StyledCol>
-                    {task.name}
+                    {task?.name}
                 </StyledCol>
             </Row>
             <Row>
                 <TypeCol>
-                    {task.inputType}
+                    {task?.inputType}
                 </TypeCol>
                 <TypeCol>
-                    {task.outputType}
+                    {task?.outputType}
                 </TypeCol>
             </Row>
         </TaskWrapper>

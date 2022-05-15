@@ -1,7 +1,8 @@
-import { Container } from "react-bootstrap";
+import { Button, Container, Form, Stack, Row, Col } from "react-bootstrap"
 import { gql, useQuery } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 import Task from "./Task";
+import { Link } from "react-router-dom";
 
 const TASKS_QUERY = gql`
     query GetTasks{
@@ -9,7 +10,8 @@ const TASKS_QUERY = gql`
             id,
             inputType,
             outputType,
-            name
+            name,
+            command
         }
     }
 `
@@ -21,9 +23,22 @@ const TasksPage =() =>{
         onCompleted: data => setTasks(data?.tasks)
     });
 
+    const newTask = () => {
+        console.log("new task")
+    }
+
     return(
         <Container>
-            <h1>Tasks</h1>
+            <Row>
+                <Col>
+                    <h1>Tasks</h1>
+                </Col>
+                <Col>
+                    <Stack style={{float: "right"}} direction="horizontal">
+                        <Button as={Link} to="new">New</Button>
+                    </Stack>
+                </Col>
+            </Row>
             {tasks.map(task => <Task key={task.id} task={task}/>)}
         </Container>
     )

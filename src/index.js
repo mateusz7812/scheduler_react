@@ -15,6 +15,7 @@ import { createClient } from 'graphql-ws';
 import TasksPage from './Components/TasksPage';
 import FlowsPage from './Components/FlowsPage';
 import FlowPage from './Components/FlowPage';
+import NewTaskPage from './Components/NewTaskPage';
 
 
 const httpLink = new HttpLink({
@@ -51,7 +52,10 @@ ReactDOM.render(
           <Route path="/scheduler" element={<App/>}>
             <Route path="" element={<Home/>}/>
             <Route path="executors" element={<ExecutorsPage/>}/>
-            <Route path="tasks" element={<TasksPage/>}/>
+            <Route path="tasks" element={<Outlet/>}>
+              <Route path="" element={<TasksPage/>}/>
+              <Route path="new" element={<NewTaskPage/>}/>
+            </Route>
             <Route path="flows" element={<Outlet />}>
               <Route path="" element={<FlowsPage/>}/>
               <Route path=":flowId" element={<FlowPage/>}/>

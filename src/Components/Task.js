@@ -1,5 +1,7 @@
 import { Container, Row, Col } from "react-bootstrap";
 import styled from "styled-components";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 
 const TaskWrapper = styled(Container)`
     border: 1px solid black;
@@ -19,22 +21,27 @@ const TypeCol = styled(StyledCol)`
 `;
 
 const Task = ({task, style}) => {
+    const renderTooltip = props => (
+        <Tooltip {...props}>{task?.command}</Tooltip>
+      );
     return(
-        <TaskWrapper style={style}>
-            <Row>
-                <StyledCol>
-                    {task?.name}
-                </StyledCol>
-            </Row>
-            <Row>
-                <TypeCol>
-                    {task?.inputType}
-                </TypeCol>
-                <TypeCol>
-                    {task?.outputType}
-                </TypeCol>
-            </Row>
-        </TaskWrapper>
+        <OverlayTrigger placement="top" overlay={renderTooltip}>
+            <TaskWrapper style={style}>
+                <Row>
+                    <StyledCol>
+                        {task?.name}
+                    </StyledCol>
+                </Row>
+                <Row>
+                    <TypeCol>
+                        {task?.inputType}
+                    </TypeCol>
+                    <TypeCol>
+                        {task?.outputType}
+                    </TypeCol>
+                </Row>
+            </TaskWrapper>
+        </OverlayTrigger>
     )
 }
 

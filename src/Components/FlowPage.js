@@ -1,7 +1,7 @@
 import { Button, Container, Form, Stack, Row, Col } from "react-bootstrap"
 import { useParams } from "react-router-dom";
 import { gql, useQuery, useMutation } from '@apollo/client';
-import { useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useTracked } from "../Container";
 import FlowTask from "./FlowTask";
 import FlowTaskDiag from "./FlowTaskDiag";
@@ -31,7 +31,8 @@ const FLOWTASKS_FOR_FLOW_QUERY = gql`
             task{
                 inputType,
                 outputType,
-                name
+                name,
+                command
             }
         }
     }
@@ -52,7 +53,25 @@ const TASKS_QUERY = gql`
             id,
             inputType,
             outputType,
-            name
+            name,
+            defaultEnvironmentVariables,
+            command
+        }
+    }
+`
+
+const CREATE_FLOWTASKS_MUTATION = gql`
+    mutation CreateFlowTasks($flowTaskNumber: Int!){
+        createFlowTasks(flowTaskNumber: $flowTaskNumber){
+            id
+        }
+    }
+`
+
+const UPDATE_FLOWTASKS_MUTATION = gql`
+    mutation UpdateFlowTasks($flowTasksToUpdate: [UpdateFlowTaskInput]){
+        updateFlowTasks(flowTasks: $flowTasksToUpdate){
+            id
         }
     }
 `
@@ -63,8 +82,7 @@ const ExecSelect = styled(Form.Select)`
 
 const FlowDiagramWrapper = styled(Row)`
     overFlow: scroll;
-    scrollbar-width: thin;
-    height: 50vh;
+    scrollbar-width: none;
 `;
 
 const PageContainer = styled(Container)`
@@ -82,6 +100,14 @@ const FlowPage = () => {
     const { state: locationState } = useLocation();
     const [editing, setEditing] = useState(false);
     const flow = locationState.flow;
+    const [ changedFlowTasksIds, setChangedFlowTasksIds ] = useState([]);
+
+    const setChanged = (flowTaskId) => {
+        if(!changedFlowTasksIds.includes(flowTaskId))
+        {
+            setChangedFlowTasksIds([...changedFlowTasksIds, flowTaskId]);
+        }
+    }
 
     useQuery(EXECUTORS_FOR_ACCOUNT_QUERY, {
         variables: {
@@ -98,7 +124,7 @@ const FlowPage = () => {
     });
 
     const [ executorId, setExecutorId ] = useState(0);
-    const [ startFlow, { data, loading, error } ] = useMutation(START_FLOW_ON_EXECUTOR_MUTATION, {
+    const [ startFlow ] = useMutation(START_FLOW_ON_EXECUTOR_MUTATION, {
         variables: {
             flowId: parseInt(params.flowId),
             executorId: executorId
@@ -108,18 +134,19 @@ const FlowPage = () => {
     const chandleSetExecutorId = (e) =>
         setExecutorId(parseInt(e.target.value));
 
-    const addTaskToFlow = (taskId, flowTaskId) => {
-        console.log(flowTasks.map(f => parseInt(f.id)));
-        let newFlowTaskId = Math.max(...flowTasks.map(f => parseInt(f.id))) + 1;
-        console.log(taskId + " " + flowTaskId + " " + newFlowTaskId);
+    const [newFlowTasksIds, setNewFlowTasksIds] = useState([]);
 
+    const addTaskToFlow = (taskId, flowTaskId) => {
+        let newFlowTaskId = Math.max(...flowTasks.map(f => parseInt(f.id))) + 1;
+        setNewFlowTasksIds([...newFlowTasksIds, newFlowTaskId])
+        let task = tasks.find(task => task.id == taskId);
         let flowTaskIndex = flowTasks.findIndex(flowTask => flowTask.id == flowTaskId);
         let flowTasksCopy = [...flowTasks,
             {
                 id: newFlowTaskId,
                 successorsIds: [],
-                environmentVariables: [{key: "test"}],
-                task: tasks.find(task => task.id == taskId)
+                environmentVariables: task.defaultEnvironmentVariables,
+                task: task
             }
         ];
         let flowTask = {...flowTasksCopy[flowTaskIndex]};
@@ -129,7 +156,96 @@ const FlowPage = () => {
     }
 
     const editFlow = () => {
-        console.log("start editing");
+        setEditing(true);
+    }
+
+    const changeFlowTaskId = (originalId, createdId, flowTasksCopy) => {
+        var changed = [];
+        var listIndex = flowTasksCopy.findIndex(ft => ft.id == originalId);
+        let flowTask = {...flowTasksCopy[listIndex]};
+        flowTask.id = createdId;
+        flowTasksCopy[listIndex] = flowTask;
+        changed.push(flowTask.id);
+
+        var listIndexes = flowTasksCopy.filter(ft => ft.successorsIds.includes(originalId)).map(ft => flowTasksCopy.findIndex(f => f.id == ft.id));
+        for (let index = 0; index < listIndexes.length; index++) {
+            const listIndex = listIndexes[index];
+            let flowTask = {...flowTasksCopy[listIndex]};
+            changed.push(flowTask.id);
+            flowTask.successorsIds.splice(flowTask.successorsIds.findIndex(id => id == originalId), 1);
+            flowTask.successorsIds = [...flowTask.successorsIds, createdId];
+            flowTasksCopy[listIndex] = flowTask;
+        }
+        return changed;
+    }
+
+    const [ updateFlowTasks ] = useMutation(UPDATE_FLOWTASKS_MUTATION);
+
+    const handleFlowTasksUpdate = () => {
+        updateFlowTasks({
+            variables: {
+                flowTasksToUpdate: changedFlowTasksIds
+                                        .map(id => 
+                                            flowTasks.find(ft => ft.id == id)
+                                            )
+                                        .map(ft => { return {
+                                            id: ft.id,
+                                            taskId: ft.taskId,
+                                            environmentVariables: ft.environmentVariables,
+                                            successorsIds: ft.successorsIds 
+                                        }})
+            }
+        })
+    }
+
+    const [ saving, setSaving ] = useState(false);
+
+    useEffect(() => {
+        if(saving == true)
+            handleFlowTasksUpdate()
+        setSaving(false);
+    }, [saving])
+
+    useEffect(()=>{
+        console.log(changedFlowTasksIds);
+    }, [changedFlowTasksIds])
+
+    const handleFlowTasksCreate = (createdFlowTaskIds) => {
+        var flowTasksCopy = [...flowTasks];
+        setChangedFlowTasksIds([...new Set([...changedFlowTasksIds, ...newFlowTasksIds.map((id, i) => changeFlowTaskId(id, createdFlowTaskIds[i].id, flowTasksCopy)).flat()])]);
+        setFlowTasks(flowTasksCopy);
+        setNewFlowTasksIds([]);
+        setSaving(true);
+    } 
+
+
+    const [ createFlowTasks ] = useMutation(CREATE_FLOWTASKS_MUTATION, {onCompleted: data => 
+            {
+                handleFlowTasksCreate(data.createFlowTasks)
+            }
+        }
+    );
+
+    const saveFlow = () => {
+        createFlowTasks({
+            variables: {
+                flowTaskNumber: newFlowTasksIds.length
+            }
+        })
+        setEditing(false);
+    }
+
+    const setEnvVarForFlowTask = (flowTaskId, key, value) => {
+        let flowTaskIndex = flowTasks.findIndex(flowTask => flowTask.id == flowTaskId);
+        let flowTasksCopy = [...flowTasks];
+        let flowTask = {...flowTasksCopy[flowTaskIndex]};
+        let varIndex = flowTask.environmentVariables.findIndex(e => e.key == key);
+        let envVariables = [...flowTask.environmentVariables];
+        envVariables[varIndex] = {key: key, value: value};
+        flowTask.environmentVariables = envVariables;
+        flowTasksCopy[flowTaskIndex] = flowTask;
+        setChanged(flowTask.id);
+        setFlowTasks(flowTasksCopy);
     }
 
     const [tasks, setTasks] = useState([]);
@@ -146,22 +262,35 @@ const FlowPage = () => {
                 </Col>
                 <Col>
                     <Stack style={{float: "right"}} direction="horizontal" gap={3}>
-                        <ExecSelect onChange={chandleSetExecutorId} aria-label="Default select example">
-                            <option>Select executor</option>
-                            {executors.map(e => <option key={e.id} value={e.id}>{e.name} - {e.status.statusCode}</option>)}
-                        </ExecSelect>
-                        <Button onClick={startFlow}>Start</Button>
-                        <Button onClick={editFlow}>Edit</Button>
+                        {!editing && 
+                        <>
+                            <ExecSelect onChange={chandleSetExecutorId} aria-label="Default select example">
+                                <option>Select executor</option>
+                                {executors.map(e => <option key={e.id} value={e.id}>{e.name} - {e.status.statusCode}</option>)}
+                            </ExecSelect>
+                            <Button onClick={startFlow}>Start</Button>
+                            <Button onClick={editFlow}>Edit</Button>
+                        </>
+                        }
+                        {editing && 
+                            <Button onClick={saveFlow}>Save</Button>
+                        }
                     </Stack>
                 </Col>
             </Row>
-            <FlowDiagramWrapper>
-                <FlowTaskDiag flowTaskId={flow.flowTaskId} flowTasks={flowTasks} addTaskToFlow={addTaskToFlow}/>
+            <FlowDiagramWrapper style={{height: editing ? "75%" : "100%"}}>
+                <FlowTaskDiag editing={editing} flowTaskId={flow.flowTaskId} flowTasks={flowTasks} addTaskToFlow={addTaskToFlow} setEnvVarForFlowTask={setEnvVarForFlowTask}/>
             </FlowDiagramWrapper>
-            {editing && <Row style={{height: "30vh"}}>
+            {editing && <Row style={{height: "20%", }}>
                 <Container>
                     <h1>Tasks</h1>
-                    {tasks.map(task => <DraggableTask key={task.id} task={task}/>)}
+                    <Row>
+                        {tasks.map(task => 
+                            <Col key={task.id} xs={3} style={{width: "270px"}}>
+                                <DraggableTask task={task}/>
+                            </Col>
+                        )}
+                    </Row>
                 </Container>
             </Row>}
         </PageContainer>

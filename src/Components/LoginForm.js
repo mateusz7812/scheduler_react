@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { SignInButton } from './SignInButton';
 
 const Wrapper = styled.div`
     width: 400px;
@@ -30,9 +31,7 @@ const LoginForm = ({login, setLogin, password, setPassword, getLogin}) => {
                     <form>
                     <div className="text-center mb-3">
                         <p>Sign in with:</p>
-                        <button type="button" className="btn btn-link btn-floating mx-1">
-                        <i className="fab fa-facebook-f"></i>
-                        </button>
+                        <SignInButton/>
 
                         <button type="button" className="btn btn-link btn-floating mx-1">
                         <i className="fab fa-google"></i>

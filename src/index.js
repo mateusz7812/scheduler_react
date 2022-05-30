@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import Home from './Components/Home';
 import { Routes, Route, BrowserRouter, Navigate, Outlet } from 'react-router-dom';
-import { Provider } from './Container';
+import { StateProvider } from './Container';
 import LoginPage from './Components/LoginPage';
 import { ApolloClient, InMemoryCache, ApolloProvider, useQuery, gql } from "@apollo/client";
 import 'mdb-ui-kit/css/mdb.min.css';
@@ -16,7 +16,15 @@ import TasksPage from './Components/TasksPage';
 import FlowsPage from './Components/FlowsPage';
 import FlowPage from './Components/FlowPage';
 import NewTaskPage from './Components/NewTaskPage';
+import NewFlowPage from './Components/NewFlowPage';
+import FlowRunsPage from './Components/FlowRunsPage';
+import "bootstrap/dist/css/bootstrap.min.css";
+import { PublicClientApplication } from "@azure/msal-browser";
+import { MsalProvider } from "@azure/msal-react";
+import { msalConfig } from "./authConfig";
+import LogoutPage from "./Components/LogoutPage";
 
+const msalInstance = new PublicClientApplication(msalConfig);
 
 const httpLink = new HttpLink({
   uri: 'http://localhost:3000/graphql'
@@ -44,29 +52,39 @@ const client = new ApolloClient({
 });
 
 const rootNode = document.getElementById('root');
+
 ReactDOM.render(
-  <ApolloProvider client={client}>
-    <Provider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/scheduler" element={<App/>}>
-            <Route path="" element={<Home/>}/>
-            <Route path="executors" element={<ExecutorsPage/>}/>
-            <Route path="tasks" element={<Outlet/>}>
-              <Route path="" element={<TasksPage/>}/>
-              <Route path="new" element={<NewTaskPage/>}/>
-            </Route>
-            <Route path="flows" element={<Outlet />}>
-              <Route path="" element={<FlowsPage/>}/>
-              <Route path=":flowId" element={<FlowPage/>}/>
-            </Route>
-          </Route>
-          <Route path='/login' element={<LoginPage/>} />
-          <Route path="*" element={<Navigate replace to="/scheduler" />} />
-        </Routes>
-      </BrowserRouter>
-    </Provider>
-  </ApolloProvider>,
+  <React.StrictMode>
+    <ApolloProvider client={client}>
+      <MsalProvider instance={msalInstance}>
+        <StateProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/scheduler" element={<App/>}>
+                <Route path="" element={<Home/>}/>
+                <Route path="executors" element={<ExecutorsPage/>}/>
+                <Route path="tasks" element={<Outlet/>}>
+                  <Route path="" element={<TasksPage/>}/>
+                  <Route path="new" element={<NewTaskPage/>}/>
+                </Route>
+                <Route path="flows" element={<Outlet />}>
+                  <Route path="" element={<FlowsPage/>}/>
+                  <Route path=":flowId" element={<Outlet/>}>
+                    <Route path="" element={<FlowPage/>}/>
+                    <Route path="runs" element={<FlowRunsPage/>}/>
+                  </Route>
+                  <Route path="new" element={<NewFlowPage/>}/>
+                </Route>
+              </Route>
+              <Route path='/login' element={<LoginPage/>} />
+              <Route path='/logout' element={<LogoutPage/>} />
+              <Route path="*" element={<Navigate replace to="/scheduler" />} />
+            </Routes>
+          </BrowserRouter>
+        </StateProvider>
+      </MsalProvider>
+    </ApolloProvider>
+  </React.StrictMode>,
     rootNode
 );
 

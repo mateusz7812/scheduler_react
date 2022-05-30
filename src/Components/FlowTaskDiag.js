@@ -15,15 +15,21 @@ const DiagBlock = styled(Container)`
 const FlowTaskDiag = ({flowTasks, flowTaskId, editing, addTaskToFlow, setEnvVarForFlowTask}) => {
     const onDrop = (event) => {
         event.stopPropagation();
-        addTaskToFlow(event.dataTransfer.getData("TaskId"), flowTask.id);
+        addTaskToFlow(event.dataTransfer.getData("TaskId"), flowTask?.id);
     }
     const flowTask = flowTasks.find(flowTask => flowTask.id == flowTaskId);
 
 
     return(
         <Stack direction="horizontal">
-            <FlowTask style={{float: "left"}} flowTask={flowTask} editing={editing} setEnvVarForFlowTask={setEnvVarForFlowTask}/>
-            <DiagBlock  style={{float: "left"}} onDrop={onDrop} onDragOver={e => e.preventDefault()}>
+            {flowTaskId !== null 
+                ?
+                    <FlowTask style={{float: "left"}} flowTask={flowTask} editing={editing} setEnvVarForFlowTask={setEnvVarForFlowTask}/>
+                : <Container>
+                    <p>Click "Edit" button above and drag tasks to start building your flow</p>
+                </Container>
+            }
+            <DiagBlock style={{float: "left", ...flowTaskId === null ? {position: "absolute", height: "100%", width: "100%", left: "0"} : {}}} onDrop={onDrop} onDragOver={e => e.preventDefault()}>
                 {flowTask?.successorsIds.map(id => 
                     <Row key={id}>
                         <FlowTaskDiag flowTaskId={id} flowTasks={flowTasks} addTaskToFlow={addTaskToFlow} editing={editing} setEnvVarForFlowTask={setEnvVarForFlowTask}/>

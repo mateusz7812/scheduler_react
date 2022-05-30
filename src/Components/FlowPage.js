@@ -9,6 +9,8 @@ import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import Task from "./Task";
 import DraggableTask from "./DraggableTask";
+import { useNavigate } from "react-router-dom";
+
 
 const EXECUTORS_FOR_ACCOUNT_QUERY = gql`
     query GetExecutorsForAccount($accountId: Int!){
@@ -75,6 +77,13 @@ const UPDATE_FLOWTASKS_MUTATION = gql`
         }
     }
 `
+const UPDATE_FLOW_MUTATION = gql`
+mutation UpdateFlow($flow: UpdateFlowInput!){
+    updateFlow(flow: $flow){
+      id
+    }
+  }
+`
 
 const ExecSelect = styled(Form.Select)`
     width: 200px;
@@ -99,8 +108,10 @@ const FlowPage = () => {
     const [state, setState] = useTracked();
     const { state: locationState } = useLocation();
     const [editing, setEditing] = useState(false);
-    const flow = locationState.flow;
+    const [flow, setFlow] = useState(locationState.flow);
     const [ changedFlowTasksIds, setChangedFlowTasksIds ] = useState([]);
+    const [rootFlowTaskIdChanged, setRootFlowTaskIdChanged] = useState(false);
+    const navigate = useNavigate();
 
     const setChanged = (flowTaskId) => {
         if(!changedFlowTasksIds.includes(flowTaskId))
@@ -140,7 +151,6 @@ const FlowPage = () => {
         let newFlowTaskId = Math.max(...flowTasks.map(f => parseInt(f.id))) + 1;
         setNewFlowTasksIds([...newFlowTasksIds, newFlowTaskId])
         let task = tasks.find(task => task.id == taskId);
-        let flowTaskIndex = flowTasks.findIndex(flowTask => flowTask.id == flowTaskId);
         let flowTasksCopy = [...flowTasks,
             {
                 id: newFlowTaskId,
@@ -149,9 +159,19 @@ const FlowPage = () => {
                 task: task
             }
         ];
-        let flowTask = {...flowTasksCopy[flowTaskIndex]};
-        flowTask.successorsIds = [...flowTask.successorsIds, newFlowTaskId];
-        flowTasksCopy[flowTaskIndex] = flowTask;
+        if(flowTaskId != null)
+        {
+            let flowTaskIndex = flowTasks.findIndex(flowTask => flowTask.id == flowTaskId);
+            let flowTask = {...flowTasksCopy[flowTaskIndex]};
+            flowTask.successorsIds = [...flowTask.successorsIds, newFlowTaskId];
+            flowTasksCopy[flowTaskIndex] = flowTask;    
+        }
+        else {
+            let flowCopy = {...flow};
+            flowCopy.flowTaskId = newFlowTaskId;
+            setFlow(flowCopy);
+            setRootFlowTaskIdChanged(true);
+        }
         setFlowTasks(flowTasksCopy);
     }
 
@@ -176,8 +196,16 @@ const FlowPage = () => {
             flowTask.successorsIds = [...flowTask.successorsIds, createdId];
             flowTasksCopy[listIndex] = flowTask;
         }
+        if(originalId == flow.flowTaskId){
+            let flowCopy = {...flow};
+            flowCopy.flowTaskId = createdId;
+            setFlow(flowCopy);
+        }
         return changed;
     }
+
+
+    const [ updateFlow ] = useMutation(UPDATE_FLOW_MUTATION);
 
     const [ updateFlowTasks ] = useMutation(UPDATE_FLOWTASKS_MUTATION);
 
@@ -194,6 +222,16 @@ const FlowPage = () => {
                                             environmentVariables: ft.environmentVariables,
                                             successorsIds: ft.successorsIds 
                                         }})
+            },
+            onCompleted: data => {
+                if(rootFlowTaskIdChanged){
+                    updateFlow({variables:{
+                        flow: {
+                            id: flow.id,
+                            flowTaskId: flow.flowTaskId
+                        }
+                    }})    
+                }
             }
         })
     }
@@ -206,10 +244,6 @@ const FlowPage = () => {
         setSaving(false);
     }, [saving])
 
-    useEffect(()=>{
-        console.log(changedFlowTasksIds);
-    }, [changedFlowTasksIds])
-
     const handleFlowTasksCreate = (createdFlowTaskIds) => {
         var flowTasksCopy = [...flowTasks];
         setChangedFlowTasksIds([...new Set([...changedFlowTasksIds, ...newFlowTasksIds.map((id, i) => changeFlowTaskId(id, createdFlowTaskIds[i].id, flowTasksCopy)).flat()])]);
@@ -217,7 +251,6 @@ const FlowPage = () => {
         setNewFlowTasksIds([]);
         setSaving(true);
     } 
-
 
     const [ createFlowTasks ] = useMutation(CREATE_FLOWTASKS_MUTATION, {onCompleted: data => 
             {
@@ -258,12 +291,13 @@ const FlowPage = () => {
         <PageContainer>
             <Row>
                 <Col>
-                    <h1 draggable="true">Flow {flow.name}</h1>
+                    <h1>Flow {flow.name}</h1>
                 </Col>
                 <Col>
                     <Stack style={{float: "right"}} direction="horizontal" gap={3}>
                         {!editing && 
                         <>
+                            <Button onClick={() => navigate("runs", {state: {flow: flow}, replace: true})}>Runs</Button>
                             <ExecSelect onChange={chandleSetExecutorId} aria-label="Default select example">
                                 <option>Select executor</option>
                                 {executors.map(e => <option key={e.id} value={e.id}>{e.name} - {e.status.statusCode}</option>)}
@@ -278,8 +312,15 @@ const FlowPage = () => {
                     </Stack>
                 </Col>
             </Row>
-            <FlowDiagramWrapper style={{height: editing ? "75%" : "100%"}}>
-                <FlowTaskDiag editing={editing} flowTaskId={flow.flowTaskId} flowTasks={flowTasks} addTaskToFlow={addTaskToFlow} setEnvVarForFlowTask={setEnvVarForFlowTask}/>
+            {!editing && 
+                <Row>
+                    <Col md="6">
+                        {flow.description}
+                    </Col>
+                </Row>
+            }
+            <FlowDiagramWrapper style={{height: editing ? "75%" : "100%", position: "relative"}}>
+               <FlowTaskDiag editing={editing} flowTaskId={flow.flowTaskId} flowTasks={flowTasks} addTaskToFlow={addTaskToFlow} setEnvVarForFlowTask={setEnvVarForFlowTask}/>    
             </FlowDiagramWrapper>
             {editing && <Row style={{height: "20%", }}>
                 <Container>

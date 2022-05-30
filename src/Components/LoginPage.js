@@ -4,10 +4,13 @@ import LoginForm from './LoginForm';
 import { Navigate } from "react-router-dom";
 import { useTracked } from "../Container";
 import { useNavigate } from "react-router-dom";
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
+import { loginRequest } from "../authConfig";
+import ProfileContent from "./ProfileContent";
 
 const LOGIN_USER = gql`
-    query GetLogin($login: String, $password: String) {
-        login(login: $login, password: $password){
+    query GetLocalLogin($login: String, $password: String) {
+        localLogin(login: $login, password: $password){
             id,
             login
         }
@@ -28,18 +31,27 @@ const LoginPage = () => {
     });
 
     useEffect(()=>{
-        if(data?.login != undefined){
+        if(data?.localLogin != undefined){
             setState({
-                accountId: data.login.id,
-                accountName: data.login.login
+                accountId: data.localLogin.id,
+                accountName: data.localLogin.login
             })
-            navigate("../", { replace: true });        
         }
     }, [data])
 
+    useEffect(() => {
+        if(state.accountId !== null && state.accountName !== null)
+            navigate("../", { replace: true });        
+    }, [state])
+
     return(
         <div>
-            <LoginForm login={login} setLogin={setLogin} password={password} setPassword={setPassword} getLogin={getLogin}/>
+            <AuthenticatedTemplate>
+                <ProfileContent/>
+            </AuthenticatedTemplate>
+            <UnauthenticatedTemplate>
+                <LoginForm login={login} setLogin={setLogin} password={password} setPassword={setPassword} getLogin={getLogin}/>
+            </UnauthenticatedTemplate>
         </div>
     )
 }

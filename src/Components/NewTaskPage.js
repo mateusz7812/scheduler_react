@@ -1,6 +1,8 @@
 import { Button, Container, Form, Stack, Row, Col } from "react-bootstrap"
 import { gql, useMutation } from '@apollo/client';
 import { useCallback, useState, useEffect } from 'react';
+import LoadingView from "./Loading";
+import { useNavigate } from "react-router-dom";
 
 const CREATE_TASK_MUTATION = gql`
     mutation CreateTask($taskInput: TaskInput){
@@ -16,6 +18,8 @@ const NewTaskPage = () => {
     const [outputType, setOutputType] = useState("");
     const [command, setCommand] = useState("");
     const [variables, setVariables] = useState([{key:"", value: ""}])
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const addVariable = () => {
         if(variables.findIndex(v => v.key == "") == -1)
@@ -41,7 +45,17 @@ const NewTaskPage = () => {
         setVariables(copyVariables);
     }
 
-    const [ createTask ] = useMutation(CREATE_TASK_MUTATION);
+    const [ createTask, {loading: taskIsCreating} ] = useMutation(CREATE_TASK_MUTATION,
+        {
+            onCompleted(data){
+                navigate("../", { replace: true });
+            }
+        });
+
+    useEffect(()=>{
+        if(taskIsCreating)
+            setLoading(true);
+    }, [taskIsCreating])
 
     const saveTask = () => {
         createTask({
@@ -60,6 +74,7 @@ const NewTaskPage = () => {
 
     return(
         <Container>
+            {loading && <LoadingView/>}
             <Row>
                 <Col>
                     <h1>New Task</h1>

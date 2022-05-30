@@ -7,4 +7,4 @@ const useValue = () => useState({
   accountName: null,
 });
 
-export const { Provider, useTracked } = createContainer(useValue);
+export const { Provider: StateProvider, useTracked } = createContainer(useValue);

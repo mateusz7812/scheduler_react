@@ -20,13 +20,13 @@ const TypeCol = styled(StyledCol)`
     font-size: 12px;
 `;
 
-const Task = ({task, style}) => {
+const Task = ({taskRef, task, style}) => {
     const renderTooltip = props => (
         <Tooltip {...props}>{task?.command}</Tooltip>
       );
     return(
         <OverlayTrigger placement="top" overlay={renderTooltip}>
-            <TaskWrapper style={style}>
+            <TaskWrapper ref={taskRef} style={style}>
                 <Row>
                     <StyledCol>
                         {task?.name}

@@ -44,7 +44,10 @@ const START_FLOW_ON_EXECUTOR_MUTATION = gql`
     mutation StartFlowOnExecutor($flowId: Int!, $executorId: Int!){
         createFlowStart(flowId: $flowId, executorId: $executorId){
             id,
-            name
+            runDate,
+            flowId,
+            executorId,
+            status
         }
     }
 `
@@ -139,7 +142,8 @@ const FlowPage = () => {
         variables: {
             flowId: parseInt(params.flowId),
             executorId: executorId
-        }
+        },
+        onCompleted: data => navigate(`runs/${data.createFlowStart.id}`, {state: {flow: flow, flowTasks: flowTasks, run: data.createFlowStart}, replace: true})
     });
 
     const chandleSetExecutorId = (e) =>
@@ -297,7 +301,7 @@ const FlowPage = () => {
                     <Stack style={{float: "right"}} direction="horizontal" gap={3}>
                         {!editing && 
                         <>
-                            <Button onClick={() => navigate("runs", {state: {flow: flow}, replace: true})}>Runs</Button>
+                            <Button onClick={() => navigate("runs", {state: {flow: flow, flowTasks: flowTasks}, replace: true})}>Runs</Button>
                             <ExecSelect onChange={chandleSetExecutorId} aria-label="Default select example">
                                 <option>Select executor</option>
                                 {executors.map(e => <option key={e.id} value={e.id}>{e.name} - {e.status.statusCode}</option>)}

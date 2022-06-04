@@ -32,6 +32,7 @@ const FlowRunsPage = () => {
     const [flowRuns, setFlowRuns] = useState([]);
     const params = useParams();
     const { state: locationState } = useLocation();
+    const navigate = useNavigate();
 
     useQuery(FLOWRUNS_FOR_FLOW_QUERY, {
         variables: {
@@ -42,7 +43,16 @@ const FlowRunsPage = () => {
 
     return(
         <Container>
-            <h1>{locationState.flow.name} runs</h1>
+            <Row>
+                <Col>            
+                    <h1>{locationState.flow.name} runs</h1>
+                </Col>
+                <Col>
+                    <Stack style={{float: "right"}} direction="horizontal" gap={3}>
+                        <Button onClick={() => navigate("../..", {state: {flow: locationState.flow}, replace: true})}>Back</Button>
+                    </Stack>
+                </Col>
+            </Row>
             <HeaderRow>
                 <Col md="1">Id</Col> 
                 <Col md="3">RunDate</Col> 
@@ -50,7 +60,7 @@ const FlowRunsPage = () => {
                 <Col md="3">Status</Col>
             </HeaderRow>
             {flowRuns?.map(f =>
-                <FlowRow>
+                <FlowRow key={f.id} onClick={() => navigate(f.id.toString(), {state: {flow: locationState.flow, flowTasks: locationState.flowTasks, run: f}, replace: true})}>
                     <Col md="1">{f.id}</Col> 
                     <Col md="3">{new Date((f.runDate/10000) - Math.abs(new Date(0, 0, 1).setFullYear(1))).toLocaleString()}</Col> 
                     <Col md="3">{f.executorId}</Col>

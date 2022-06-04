@@ -60,7 +60,7 @@ const FlowsPage =() =>{
                 </Col>
             </HeaderRow>
             {flows.map(t => 
-                <FlowRow onClick={() => navigate(t.id.toString(), {state: {flow: t}, replace: true})}>
+                <FlowRow key={t.id} onClick={() => navigate(t.id.toString(), {state: {flow: t}, replace: true})}>
                     <Col md="1">{t.id}</Col> 
                     <Col md="3">{t.name}</Col> 
                     <Col md="6">{t.description}</Col>

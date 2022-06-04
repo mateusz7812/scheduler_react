@@ -80,7 +80,7 @@ const ExecutorsPage = () => {
                 <Col md="2">Last usage</Col>
             </HeaderRow>
             {executors?.map(e =>
-                <FlowRow>
+                <FlowRow key={e.id}>
                     <Col md="1">{e.id}</Col> 
                     <Col md="2">{e.name}</Col> 
                     <Col md="5">{e.description}</Col>

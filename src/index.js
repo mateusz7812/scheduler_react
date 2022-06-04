@@ -23,6 +23,7 @@ import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
 import { msalConfig } from "./authConfig";
 import LogoutPage from "./Components/LogoutPage";
+import FlowRunPage from './Components/FlowRunPage';
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -71,7 +72,10 @@ ReactDOM.render(
                   <Route path="" element={<FlowsPage/>}/>
                   <Route path=":flowId" element={<Outlet/>}>
                     <Route path="" element={<FlowPage/>}/>
-                    <Route path="runs" element={<FlowRunsPage/>}/>
+                    <Route path="runs" element={<Outlet/>}>
+                      <Route path="" element={<FlowRunsPage/>}/>
+                      <Route path=":runId" element={<FlowRunPage/>}/>
+                    </Route>
                   </Route>
                   <Route path="new" element={<NewFlowPage/>}/>
                 </Route>

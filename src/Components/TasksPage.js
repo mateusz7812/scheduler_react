@@ -41,7 +41,7 @@ const TasksPage =() =>{
             </Row>
             <Row>
                 {tasks.map(task => 
-                    <Col sm="8" md="6" lg="4" xl="3">
+                    <Col key={task.id} sm="8" md="6" lg="4" xl="3">
                         <Task key={task.id} task={task}/>
                     </Col>
                 )}

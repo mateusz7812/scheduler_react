@@ -13,13 +13,14 @@ const FLOWRUNS_FOR_FLOW_QUERY = gql`
       id,
       runDate,
       flowId,
-      executorId
+      executorId,
+      status
     }
   }
 `
   
 const HeaderRow = styled(Row)`
-    font-size: 140%;
+    font-size: 140%; 
 `
 
 const FlowRow = styled(Row)`
@@ -38,7 +39,10 @@ const FlowRunsPage = () => {
         variables: {
             flowId: parseInt(params.flowId)
         },
-        onCompleted: data => setFlowRuns(data?.flowRunsForFlow)
+        onCompleted: data => {
+            setFlowRuns(data?.flowRunsForFlow)
+            console.log(data?.flowRunsForFlow)
+        }
     });
 
     return(
@@ -64,7 +68,7 @@ const FlowRunsPage = () => {
                     <Col md="1">{f.id}</Col> 
                     <Col md="3">{new Date((f.runDate/10000) - Math.abs(new Date(0, 0, 1).setFullYear(1))).toLocaleString()}</Col> 
                     <Col md="3">{f.executorId}</Col>
-                    <Col md="3">{}</Col>
+                    <Col md="3">{f.status}</Col>
                 </FlowRow>
                 )}
         </Container>

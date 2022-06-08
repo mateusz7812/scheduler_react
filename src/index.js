@@ -25,14 +25,16 @@ import { msalConfig } from "./authConfig";
 import LogoutPage from "./Components/LogoutPage";
 import FlowRunPage from './Components/FlowRunPage';
 
+const server_address = "http://scheduler-server-2.westeurope.azurecontainer.io:3000/graphql"
+
 const msalInstance = new PublicClientApplication(msalConfig);
 
 const httpLink = new HttpLink({
-  uri: 'http://localhost:3000/graphql'
+  uri: server_address
 });
 
 const wsLink = new GraphQLWsLink(createClient({
-  url: 'ws://localhost:3000/graphql',
+  url: server_address,
 }));
 
 const splitLink = split(

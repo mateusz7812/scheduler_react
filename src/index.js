@@ -26,7 +26,7 @@ import LogoutPage from "./Components/LogoutPage";
 import FlowRunPage from './Components/FlowRunPage';
 
 const server_address = process.env.GRAPHQL_ADDRESS //"http://scheduler-server-2.westeurope.azurecontainer.io:3000/graphql"
-
+console.log(`process.env.GRAPHQL_ADDRESS: ${process.env.GRAPHQL_ADDRESS}`);
 const msalInstance = new PublicClientApplication(msalConfig);
 
 const httpLink = new HttpLink({

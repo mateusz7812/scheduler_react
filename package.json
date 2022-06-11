@@ -18,7 +18,7 @@
     "react-dom": "^17.0.2",
     "react-reparenting": "^0.6.1",
     "react-router-dom": "^6.3.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^4.0.3",
     "react-tracked": "^1.7.9",
     "react-xarrows": "^2.0.2",
     "scheduler": "^0.21.0",

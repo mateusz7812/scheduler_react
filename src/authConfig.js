@@ -1,8 +1,12 @@
+console.log(`REACT_APP_MSAL_CLIENT_ID: ${process.env.REACT_APP_MSAL_CLIENT_ID}`);
+console.log(`REACT_APP_MSAL_AUTHORITY: ${process.env.REACT_APP_MSAL_AUTHORITY}`);
+console.log(`REACT_APP_MSAL_REDIRECT_URL: ${process.env.REACT_APP_MSAL_REDIRECT_URL}`);
+
 export const msalConfig = {
     auth: {
-      clientId: process.env.MSAL_CLIENT_ID, //"232cc6c8-2cba-4057-bd14-ee462bfe2dd1",
-      authority: process.env.MSAL_AUTHORITY, //"https://login.microsoftonline.com/7ff229c8-8063-4d45-a70f-1ad03cfbb293", // This is a URL (e.g. https://login.microsoftonline.com/{your tenant ID})
-      redirectUri: process.env.MSAL_REDIRECT_URL //"http://localhost:3006/login",
+      clientId: process.env.REACT_APP_MSAL_CLIENT_ID, //"232cc6c8-2cba-4057-bd14-ee462bfe2dd1",
+      authority: process.env.REACT_APP_MSAL_AUTHORITY, //"https://login.microsoftonline.com/7ff229c8-8063-4d45-a70f-1ad03cfbb293", // This is a URL (e.g. https://login.microsoftonline.com/{your tenant ID})
+      redirectUri: process.env.REACT_APP_MSAL_REDIRECT_URL //"http://localhost:3006/login",
     },
     cache: {
       cacheLocation: "sessionStorage", // This configures where your cache will be stored

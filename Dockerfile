@@ -1,11 +1,11 @@
-FROM node:13.12.0-alpine as build
+FROM node:alpine as build
 WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
 RUN apk --no-cache add git
 RUN git clone https://github.com/mateusz7812/scheduler_react.git
 WORKDIR /app/scheduler_react
-RUN npm install
+RUN npm install -force
 CMD [ "npm", "start" ]
 #RUN npm run build
 

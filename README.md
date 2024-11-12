@@ -1,70 +1,41 @@
-# Getting Started with Create React App
+# Scheduler Web App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Scheduler is a tool for IT administrators that enables remote execution of PowerShell commands on computers within a network. Its features include creating task templates, simultaneously executing task trees on multiple machines, and logging actions, which simplifies the management of the IT environment and increases administrative efficiency. The project can be especially useful in large IT environments where managing numerous computers requires automation and centralization of tasks.
 
-## Available Scripts
+Web App is a command centre of whole Scheduler system. It allows you on creating tasks, flows (trees of tasks), tracing flow runs and managing executors. Developed using React, GraphQL, Docker, nginx, Microsoft Authentication Library.
 
-In the project directory, you can run:
+The Azure pipeline builds image and pushes it to repository at: https://hub.docker.com/repository/docker/mateusz7812/scheduler_react/general.
 
-### `npm start`
+More information can be found in other projects related to the Scheduler app.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Tasks tab
+![obraz](https://github.com/user-attachments/assets/d7c3f28e-0813-4277-8a14-feaeb14eeaa0)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Tasks previews
+Tasks commands uses Powershell systax allowing on inserting evironment variables and combining commands.
 
-### `npm test`
+![obraz](https://github.com/user-attachments/assets/f7f081b1-1f62-4c9f-9d31-dfc82e743dd1)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+![obraz](https://github.com/user-attachments/assets/11042d4f-d451-4618-90b6-41cf53c7afcb)
 
-### `npm run build`
+### Flows tab
+![obraz](https://github.com/user-attachments/assets/0c0ccdf3-582c-46ce-a100-c9d4e95d6245)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Flow tab
+Flow tab contains metadata about flow like name and desription, flow diagram and control panel to edit, run or view runs history.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+![obraz](https://github.com/user-attachments/assets/f6f920da-da4d-45b7-bf6c-eaa1f76b16d2)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Started flow tab
+Flow tab show live updates about started flow with logs and task status indicators.
 
-### `npm run eject`
+![obraz](https://github.com/user-attachments/assets/03532a8c-b7aa-4666-be88-fa5fb11db1a7)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Editing flows
+Sheduler supports parallel tasks and such complicated flows like the one below.
+Editing flow involvs dragging tasks using a mouse and writing values for environment variables. 
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+![obraz](https://github.com/user-attachments/assets/a097c481-529d-4d87-bbe9-1816da84ef8b)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Executors tab
+![obraz](https://github.com/user-attachments/assets/c21f9015-ceee-4118-9aee-eb1e25d3ed9d)

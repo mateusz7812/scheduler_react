@@ -49,7 +49,7 @@ const LoginForm = ({login, setLogin, password, setPassword, getLogin}) => {
                     <p className="text-center">or:</p>
 
                     <div className="form-outline mb-4">
-                        <input type="email" id="loginName" className="form-control" value={login} onInput={e => setLogin(e.target.value)}/>
+                        <input type="text" id="loginName" className="form-control" value={login} onInput={e => setLogin(e.target.value)}/>
                         <label className="form-label" htmlFor="loginName">Email or username</label>
                     </div>
 

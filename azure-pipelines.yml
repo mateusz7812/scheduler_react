@@ -1,0 +1,49 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'docker hub'
+        repository: 'mateusz7812/scheduler_react'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        arguments: '--no-cache'
+        tags: |
+          1.$(tag)
+          latest
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        containerRegistry: 'docker hub'
+        repository: 'mateusz7812/scheduler_react'
+        command: 'push'
+        tags: |
+          1.$(tag)
+          latest
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: 'kubernetes'
+        command: 'rollout'
+        arguments: 'restart deployment/scheduler-app-deployment'
+        secretType: 'dockerRegistry'
+        containerRegistryType: 'Azure Container Registry'

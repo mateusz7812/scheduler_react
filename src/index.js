@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
+import Config from './Config';
 import Home from './Components/Home';
 import { Routes, Route, BrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { StateProvider } from './Container';
@@ -25,16 +26,26 @@ import { msalConfig } from "./authConfig";
 import LogoutPage from "./Components/LogoutPage";
 import FlowRunPage from './Components/FlowRunPage';
 
-const server_address = process.env.REACT_APP_GRAPHQL_ADDRESS //"http://scheduler-server-2.westeurope.azurecontainer.io:3000/graphql"
-console.log(`REACT_APP_GRAPHQL_ADDRESS: ${process.env.REACT_APP_GRAPHQL_ADDRESS}`);
+var key = "";
+for (key in Config) { 
+  console.log(`Config.${key}: ${Config[key]}`); 
+}
+
+const server_address = Config.graphql_address //"http://scheduler-server-2.westeurope.azurecontainer.io:3000/graphql"
 const msalInstance = new PublicClientApplication(msalConfig);
 
 const httpLink = new HttpLink({
-  uri: server_address
+  uri: server_address,
+  fetchOptions: {
+    mode: 'no-cors',
+  },
 });
 
 const wsLink = new GraphQLWsLink(createClient({
   url: server_address,
+  fetchOptions: {
+    mode: 'no-cors',
+  },
 }));
 
 const splitLink = split(
@@ -51,12 +62,15 @@ const splitLink = split(
 
 const client = new ApolloClient({
   link: splitLink,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
+  fetchOptions: {
+    mode: 'no-cors',
+  },
 });
 
-const rootNode = document.getElementById('root');
 
-ReactDOM.render(
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
   <React.StrictMode>
     <ApolloProvider client={client}>
       <MsalProvider instance={msalInstance}>
@@ -90,7 +104,6 @@ ReactDOM.render(
         </StateProvider>
       </MsalProvider>
     </ApolloProvider>
-  </React.StrictMode>,
-    rootNode
+  </React.StrictMode>
 );
 
